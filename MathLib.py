@@ -181,7 +181,10 @@ def vector_magnitude(v):
        return sum(comp ** 2 for comp in v) ** 0.5
 
 
-
-
-
-
+# Calcula el producto cruzado entre dos vectores 3D.
+def cross_product(vec1, vec2):
+    return [
+        vec1[1] * vec2[2] - vec1[2] * vec2[1],
+        vec1[2] * vec2[0] - vec1[0] * vec2[2],
+        vec1[0] * vec2[1] - vec1[1] * vec2[0]
+    ]

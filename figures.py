@@ -195,8 +195,55 @@ class AABB(Shape):
                          obj=self)
 
 
-from intercept import Intercept
-from MathLib import *
-from math import isclose
+class Triangle(Shape):
+    def __init__(self, v0, v1, v2, material):
+        super().__init__(v0, material)
+        self.v0 = v0
+        self.v1 = v1
+        self.v2 = v2
+        self.type = "Triangle"
+        # Compute the normal of the triangle using cross product of two edges
+        edge1 = sub_elements(v1, v0)
+        edge2 = sub_elements(v2, v0)
+        self.normal = normalize_vector(cross_product(edge1, edge2))
+
+    def ray_intersect(self, origin, direction):
+        # Implementing Möller-Trumbore intersection algorithm for triangle
+        EPSILON = 1e-6
+        edge1 = sub_elements(self.v1, self.v0)
+        edge2 = sub_elements(self.v2, self.v0)
+        h = cross_product(direction, edge2)
+        a = dot(edge1, h)
+
+        if -EPSILON < a < EPSILON:
+            return None  # This means the ray is parallel to the triangle
+
+        f = 1.0 / a
+        s = sub_elements(origin, self.v0)
+        u = f * dot(s, h)
+
+        if u < 0.0 or u > 1.0:
+            return None
+
+        q = cross_product(s, edge1)
+        v = f * dot(direction, q)
+
+        if v < 0.0 or u + v > 1.0:
+            return None
+
+        t = f * dot(edge2, q)
+
+        if t > EPSILON:
+            # Ray intersection point
+            intersection_point = sum_elements(origin, [comp * t for comp in direction])
+            return Intercept(point=intersection_point,
+                             normal=self.normal,
+                             distance=t,
+                             obj=self,
+                             rayDirection=direction,
+                             texCoords=None)
+        else:
+            return None  # This means that there is no intersection
+
 
 
