@@ -14,26 +14,56 @@ screen = pygame.display.set_mode((width, height), pygame.SCALED)
 clock = pygame.time.Clock()
 
 rt = RendererRT(screen)
-# rt.envMap = Texture('Textures/fondo.bmp')
-
 rt.glClearColor(0.5, 0.0, 0.0)
 rt.glClear()
 
+# Material para la pirámide
+pyramid_material = Material(difuse=[0.8, 0.5, 0.2], spec=64)
 # Materiales
-tri_material = Material(difuse=[0.2, 0.8, 0.3], spec=64)
+brick = Material(difuse = [1, 0.2, 0.2], spec = 128, Ks = 0.25)
+grass = Material(difuse = [0.2, 1.0, 0.2], spec = 64, Ks = 0.2)
+mirror = Material(difuse = [0.9,0.9,0.9], spec = 128, Ks = 0.2, matType = REFLECTIVE)
+blueMirror = Material(difuse=[0.2,0.2,0.9], spec=128, Ks=0.2, matType=REFLECTIVE)
+glass = Material(spec = 128, Ks=0.2, ior=1.5, matType= TRANSPARENT)
+vidrio = Material(texture = Texture('Textures/vidrio.bmp'), spec=128, Ks=0.2, matType=REFLECTIVE)
 
-# Crear un triángulo
-triangle = Triangle(v0=[-1, -1, -5], v1=[1, -1, -5], v2=[0, 1, -5], material=tri_material)
+lava = Material(texture = Texture('Textures/lava.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
+mandala = Material(texture = Texture('Textures/mandala.bmp'), spec=128, Ks=0.2)
+bubuja = Material(texture = Texture('Textures/burbujas.bmp'), spec=128, Ks=0.2, matType=TRANSPARENT)
+reptil = Material(texture = Texture('Textures/reptil.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
+deathStar = Material(difuse=[1, 1, 1], texture=Texture('Textures/deathStar.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
+champions = Material(texture = Texture('Textures/champions.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
+holograma = Material(texture = Texture('Textures/holograma.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
 
-# Añadir el triángulo a la escena
+
+# Coordenadas de la pirámide
+# Vértices de la base cuadrada
+v0 = [-3, 1, -7]
+v1 = [-1, 1, -7]
+v2 = [-2, 2.5, -8]
+triangle = Triangle(v0, v1, v2, material=glass)
 rt.scene.append(triangle)
 
-# Ajustar la cámara para que se aleje y se centre en la escena
-rt.camera.position = [0, 0, 1]  # La cámara se coloca en el origen y se aleja en Z
+
+v3 = [3, 2, -9]
+v4 = [1.2, 2, -8]
+v5 = [2, 4, -8]
+triangle2 = Triangle(v3, v4, v5, material=lava)
+rt.scene.append(triangle2)
+
+v0 = [-2, -1.5, -3]
+v1 = [1, -1.5, -3]
+v2 = [-2, -1.5, -6]
+triangle3 = Triangle(v0, v1, v2, material=holograma)
+rt.scene.append(triangle3)
+
+# Ajustar la cámara para una vista lateral en perspectiva
+
+
 
 # Iluminación
-rt.lights.append(DirectionalLight(direction=[0, 0, -1], intensity=1.0))  # Luz desde abajo hacia arriba
-rt.lights.append(AmbientLight(intensity=0.5))  # Luz ambiental débil
+#rt.lights.append(DirectionalLight(direction=[0, 0, -1], intensity=1.0))
+rt.lights.append(AmbientLight(intensity=0.5))
 
 # Renderizado de la escena
 rt.glRender()

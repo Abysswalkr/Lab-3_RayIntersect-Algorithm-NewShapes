@@ -188,3 +188,12 @@ def cross_product(vec1, vec2):
         vec1[2] * vec2[0] - vec1[0] * vec2[2],
         vec1[0] * vec2[1] - vec1[1] * vec2[0]
     ]
+
+# Suma de vectores
+def vector_add(v1, v2):
+    return [v1[i] + v2[i] for i in range(len(v1))]
+
+
+# Resta de vectores
+def vector_subtract(v1, v2):
+    return [v1[i] - v2[i] for i in range(len(v1))]

@@ -1,55 +1,35 @@
-from math import acos, asin, pi, sqrt
-
-
-# Producto punto entre dos vectores
-def dot_product(v1, v2):
-    return sum(v1[i] * v2[i] for i in range(len(v1)))
-
-
-# Normalización de un vector
-def normalize_vector(v):
-    magnitude = sqrt(sum(comp ** 2 for comp in v))
-    return [comp / magnitude for comp in v]
-
-
-# Multiplicación escalar-vector
-def scalar_multiply(scalar, v):
-    return [scalar * comp for comp in v]
-
-
-# Suma de vectores
-def vector_add(v1, v2):
-    return [v1[i] + v2[i] for i in range(len(v1))]
-
-
-# Resta de vectores
-def vector_subtract(v1, v2):
-    return [v1[i] - v2[i] for i in range(len(v1))]
+from math import acos, asin, pi
+from MathLib import *
 
 
 def refractVector(normal, incident, n1, n2):
-    # Ley de Snell
-    c1 = dot_product(normal, incident)
+    # Snell's Law
+    c1 = dot(normal, incident)
 
     if c1 < 0:
         c1 = -c1
     else:
-        normal = scalar_multiply(-1, normal)
+        normal = scalar_multiply(normal, -1)
         n1, n2 = n2, n1
 
     n = n1 / n2
 
-    term1 = scalar_multiply(n, vector_add(incident, scalar_multiply(c1, normal)))
-    term2 = scalar_multiply(-1, normal)
-    term3 = sqrt(1 - n ** 2 * (1 - c1 ** 2))
+    temp_vec = scalar_multiply(normal, c1)
+    incident_plus_normal = vector_add(incident, temp_vec)
 
-    T = vector_add(term1, scalar_multiply(term3, term2))
+    T1 = scalar_multiply(incident_plus_normal, n)
+
+    factor = (1 - n ** 2 * (1 - c1 ** 2)) ** 0.5
+    T2 = scalar_multiply(normal, factor)
+
+    T = vector_add(T1, T2)
 
     return normalize_vector(T)
 
 
 def totalInternalReflection(normal, incident, n1, n2):
-    c1 = dot_product(normal, incident)
+    c1 = dot(normal, incident)
+
     if c1 < 0:
         c1 = -c1
     else:
@@ -65,14 +45,15 @@ def totalInternalReflection(normal, incident, n1, n2):
 
 
 def fresnel(normal, incident, n1, n2):
-    c1 = dot_product(normal, incident)
+    c1 = dot(normal, incident)
+
     if c1 < 0:
         c1 = -c1
     else:
         n1, n2 = n2, n1
 
-    s2 = (n1 * sqrt(1 - c1 ** 2)) / n2
-    c2 = sqrt(1 - s2 ** 2)
+    s2 = (n1 * (1 - c1 ** 2) ** 0.5) / n2
+    c2 = (1 - s2 ** 2) ** 0.5
 
     F1 = (((n2 * c1) - (n1 * c2)) / ((n2 * c1) + (n1 * c2))) ** 2
     F2 = (((n1 * c2) - (n2 * c1)) / ((n1 * c2) + (n2 * c1))) ** 2

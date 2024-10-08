@@ -216,7 +216,7 @@ class Triangle(Shape):
         a = dot(edge1, h)
 
         if -EPSILON < a < EPSILON:
-            return None  # This means the ray is parallel to the triangle
+            return None
 
         f = 1.0 / a
         s = sub_elements(origin, self.v0)
