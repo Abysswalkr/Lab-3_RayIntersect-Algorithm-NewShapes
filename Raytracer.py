@@ -14,19 +14,19 @@ screen = pygame.display.set_mode((width, height), pygame.SCALED)
 clock = pygame.time.Clock()
 
 rt = RendererRT(screen)
-rt.envMap = Texture('Textures/fondo.bmp')
 rt.glClearColor(0.5, 0.0, 0.0)
 rt.glClear()
 
+# Material para la pirámide
+pyramid_material = Material(difuse=[0.8, 0.5, 0.2], spec=64)
 # Materiales
 brick = Material(difuse = [1, 0.2, 0.2], spec = 128, Ks = 0.25)
 grass = Material(difuse = [0.2, 1.0, 0.2], spec = 64, Ks = 0.2)
 mirror = Material(difuse = [0.9,0.9,0.9], spec = 128, Ks = 0.2, matType = REFLECTIVE)
 blueMirror = Material(difuse=[0.2,0.2,0.9], spec=128, Ks=0.2, matType=REFLECTIVE)
 glass = Material(spec = 128, Ks=0.2, ior=1.5, matType= TRANSPARENT)
-
-
 vidrio = Material(texture = Texture('Textures/vidrio.bmp'), spec=128, Ks=0.2, matType=REFLECTIVE)
+
 lava = Material(texture = Texture('Textures/lava.bmp'), spec=128, Ks=0.2, matType=OPAQUE)
 mandala = Material(texture = Texture('Textures/mandala.bmp'), spec=128, Ks=0.2)
 bubuja = Material(texture = Texture('Textures/burbujas.bmp'), spec=128, Ks=0.2, matType=TRANSPARENT)

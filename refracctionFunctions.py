@@ -1,28 +1,28 @@
-from math import acos, asin, pi, sqrt
-from MathLib import dot, scalar_multiply, sum_elements, sub_elements, normalize_vector
+from math import acos, asin, pi
+from MathLib import *
 
 
 def refractVector(normal, incident, n1, n2):
-    # Ley de Snell
+    # Snell's Law
     c1 = dot(normal, incident)
 
     if c1 < 0:
         c1 = -c1
     else:
-        normal = scalar_multiply(-1, normal)
+        normal = scalar_multiply(normal, -1)
         n1, n2 = n2, n1
 
     n = n1 / n2
 
-    temp_vec = scalar_multiply(c1, normal)
-    incident_plus_normal = sum_elements(incident, temp_vec)
+    temp_vec = scalar_multiply(normal, c1)
+    incident_plus_normal = vector_add(incident, temp_vec)
 
-    T1 = scalar_multiply(n, incident_plus_normal)
+    T1 = scalar_multiply(incident_plus_normal, n)
 
     factor = (1 - n ** 2 * (1 - c1 ** 2)) ** 0.5
-    T2 = scalar_multiply(factor, normal)
+    T2 = scalar_multiply(normal, factor)
 
-    T = sub_elements(T1, T2)
+    T = vector_add(T1, T2)
 
     return normalize_vector(T)
 
@@ -52,8 +52,8 @@ def fresnel(normal, incident, n1, n2):
     else:
         n1, n2 = n2, n1
 
-    s2 = (n1 * sqrt(1 - c1 ** 2)) / n2
-    c2 = sqrt(1 - s2 ** 2)
+    s2 = (n1 * (1 - c1 ** 2) ** 0.5) / n2
+    c2 = (1 - s2 ** 2) ** 0.5
 
     F1 = (((n2 * c1) - (n1 * c2)) / ((n2 * c1) + (n1 * c2))) ** 2
     F2 = (((n1 * c2) - (n2 * c1)) / ((n1 * c2) + (n2 * c1))) ** 2
