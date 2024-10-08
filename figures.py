@@ -197,53 +197,131 @@ class AABB(Shape):
 
 class Triangle(Shape):
     def __init__(self, v0, v1, v2, material):
-        super().__init__(v0, material)
+        super().__init__(None, material)  # No tiene una posición como tal
         self.v0 = v0
         self.v1 = v1
         self.v2 = v2
         self.type = "Triangle"
-        # Compute the normal of the triangle using cross product of two edges
-        edge1 = sub_elements(v1, v0)
-        edge2 = sub_elements(v2, v0)
-        self.normal = normalize_vector(cross_product(edge1, edge2))
 
-    def ray_intersect(self, origin, direction):
-        # Implementing Möller-Trumbore intersection algorithm for triangle
-        EPSILON = 1e-6
+        # Precalcula la normal del triángulo usando los vértices
         edge1 = sub_elements(self.v1, self.v0)
         edge2 = sub_elements(self.v2, self.v0)
-        h = cross_product(direction, edge2)
+        self.normal = cross_product(edge1, edge2)
+        self.normal = normalize(self.normal)  # Normalizar la normal
+
+    def ray_intersect(self, orig, dir):
+        epsilon = 1e-6
+        edge1 = sub_elements(self.v1, self.v0)
+        edge2 = sub_elements(self.v2, self.v0)
+
+        # Intersección del rayo con el triángulo
+        h = cross_product(dir, edge2)
         a = dot(edge1, h)
 
-        if -EPSILON < a < EPSILON:
-            return None
+        if -epsilon < a < epsilon:
+            return None  # El rayo es paralelo al triángulo
 
         f = 1.0 / a
-        s = sub_elements(origin, self.v0)
+        s = sub_elements(orig, self.v0)
         u = f * dot(s, h)
 
         if u < 0.0 or u > 1.0:
             return None
 
         q = cross_product(s, edge1)
-        v = f * dot(direction, q)
+        v = f * dot(dir, q)
 
         if v < 0.0 or u + v > 1.0:
             return None
 
         t = f * dot(edge2, q)
 
-        if t > EPSILON:
-            # Ray intersection point
-            intersection_point = sum_elements(origin, [comp * t for comp in direction])
-            return Intercept(point=intersection_point,
-                             normal=self.normal,
-                             distance=t,
-                             obj=self,
-                             rayDirection=direction,
-                             texCoords=None)
+        if t > epsilon:
+            P = sum_elements(orig, scalar_multiply(t, dir))  # Cambio aquí, primero el escalar y luego el vector
+            return Intercept(
+                point=P,
+                normal=self.normal,
+                distance=t,
+                texCoords=[u, v],  # Podemos usar (u, v) como coordenadas de textura
+                rayDirection=dir,
+                obj=self
+            )
         else:
-            return None  # This means that there is no intersection
+            return None
 
 
-
+#class Cilinder(object):
+#    def __init__(self, position, radius, height, material):
+#        self.position = position
+#        self.radius = radius
+#        self.height = height
+#        self.material = material
+#
+#        # Parte superior e inferior del cilindro
+#        self.upper_disk = Disk(
+#            [self.position[0], self.position[1] + self.height / 2, self.position[2]],
+#            self.radius,
+#            (0, 1, 0),
+#            self.material
+#        )
+#        self.lower_disk = Disk(
+#            [self.position[0], self.position[1] - self.height / 2, self.position[2]],
+#            self.radius,
+#            (0, -1, 0),
+#            self.material
+#        )
+#
+#    def ray_intersect(self, orig, dir):
+#        # Verificar intersección con los discos superior e inferior
+#        intersect_upper = self.upper_disk.ray_intersect(orig, dir)
+#        intersect_lower = self.lower_disk.ray_intersect(orig, dir)
+#
+#        # Intersección con la superficie lateral del cilindro
+#        # Transformar origen y dirección del rayo al sistema de coordenadas del cilindro
+#        oc = np.subtract(orig, self.position)
+#        a = dir[0] ** 2 + dir[2] ** 2
+#        b = 2 * (oc[0] * dir[0] + oc[2] * dir[2])
+#        c = oc[0] ** 2 + oc[2] ** 2 - self.radius ** 2
+#
+#        discriminant = b ** 2 - 4 * a * c
+#        if discriminant < 0:
+#            lateral_intersect = None
+#        else:
+#            # Calcular t0 y t1 para la superficie lateral
+#            t0 = (-b - np.sqrt(discriminant)) / (2 * a)
+#            t1 = (-b + np.sqrt(discriminant)) / (2 * a)
+#
+#            # Escoger el valor más cercano a la cámara
+#            t = min(t0, t1) if t0 > 0 else t1
+#            if t < 0:
+#                lateral_intersect = None
+#            else:
+#                # Calcular el punto de intersección
+#                P = np.add(orig, t * np.array(dir))
+#                y = P[1] - self.position[1]
+#
+#                # Verificar si el punto de intersección está dentro de la altura del cilindro
+#                if -self.height / 2 <= y <= self.height / 2:
+#                    normal = np.array([P[0] - self.position[0], 0, P[2] - self.position[2]])
+#                    normal = normal / np.linalg.norm(normal)
+#                    lateral_intersect = Intersect(
+#                        distance=t,
+#                        point=P,
+#                        normal=normal,
+#                        texcoords=None,
+#                        sceneObj=self
+#                    )
+#                else:
+#                    lateral_intersect = None
+#
+#        # Escoger el punto de intersección más cercano entre los discos y la superficie lateral
+#        closest_intersect = None
+#        if intersect_upper and (closest_intersect is None or intersect_upper.distance < closest_intersect.distance):
+#            closest_intersect = intersect_upper
+#        if intersect_lower and (closest_intersect is None or intersect_lower.distance < closest_intersect.distance):
+#            closest_intersect = intersect_lower
+#        if lateral_intersect and (closest_intersect is None or lateral_intersect.distance < closest_intersect.distance):
+#            closest_intersect = lateral_intersect
+#
+#        return closest_intersect
+#

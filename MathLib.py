@@ -197,3 +197,14 @@ def vector_add(v1, v2):
 # Resta de vectores
 def vector_subtract(v1, v2):
     return [v1[i] - v2[i] for i in range(len(v1))]
+
+
+def norm(v):
+    return sqrt(sum([comp ** 2 for comp in v]))
+
+
+def normalize(v):
+    vector_norm = norm(v)
+    if vector_norm == 0:
+        raise ValueError("La norma del vector es 0, no se puede normalizar.")
+    return [comp / vector_norm for comp in v]
