@@ -2,29 +2,28 @@ from math import acos, asin, pi
 from MathLib import *
 
 
-def refractVector(normal, incident, n1, n2):
-    # Snell's Law
-    c1 = dot(normal, incident)
+def refractVector(normal, direction, ior1, ior2):
+    cosi = max(-1, min(1, dot(direction, normal)))
+    etai = ior1
+    etat = ior2
+    n = normal
 
-    if c1 < 0:
-        c1 = -c1
+    if cosi < 0:
+        cosi = -cosi
     else:
-        normal = scalar_multiply(normal, -1)
-        n1, n2 = n2, n1
+        etai, etat = etat, etai
+        n = scalar_multiply(-1, normal)  # Negar el vector normal si estamos dentro del objeto
 
-    n = n1 / n2
+    eta = etai / etat
+    k = 1 - eta ** 2 * (1 - cosi ** 2)
 
-    temp_vec = scalar_multiply(normal, c1)
-    incident_plus_normal = vector_add(incident, temp_vec)
+    if k < 0:
+        return None  # Total internal reflection
 
-    T1 = scalar_multiply(incident_plus_normal, n)
+    temp_vec = scalar_multiply(eta, direction)
+    normal_vec = scalar_multiply((eta * cosi - sqrt(k)), n)
 
-    factor = (1 - n ** 2 * (1 - c1 ** 2)) ** 0.5
-    T2 = scalar_multiply(normal, factor)
-
-    T = vector_add(T1, T2)
-
-    return normalize_vector(T)
+    return sum_elements(temp_vec, normal_vec)
 
 
 def totalInternalReflection(normal, incident, n1, n2):
