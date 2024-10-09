@@ -1,6 +1,6 @@
 from intercept import Intercept
 from MathLib import *
-from math import tan, pi, atan2, acos, isclose
+from math import tan, pi, atan2, acos, isclose, sqrt
 
 
 class Shape(object):
@@ -248,3 +248,92 @@ class Triangle(Shape):
             )
         else:
             return None
+
+
+class Cylinder(Shape):
+    def __init__(self, position, radius, height, material):
+        super().__init__(position, material)
+        self.radius = radius
+        self.height = height
+        self.type = "Cylinder"
+        self.top_center = sum_elements(position, [0, height / 2, 0])    # Centro de la tapa superior
+        self.bottom_center = sub_elements(position, [0, height / 2, 0])  # Centro de la tapa inferior
+
+    def ray_intersect(self, orig, dir):
+        # Coeficientes para la ecuación cuadrática de la superficie lateral del cilindro
+        a = dir[0]**2 + dir[2]**2
+        b = 2 * ((orig[0] - self.position[0]) * dir[0] + (orig[2] - self.position[2]) * dir[2])
+        c = (orig[0] - self.position[0])**2 + (orig[2] - self.position[2])**2 - self.radius**2
+
+        discriminant = b**2 - 4 * a * c
+        t_values = []
+
+        # Intersección con la superficie lateral del cilindro
+        if discriminant >= 0:
+            sqrt_discriminant = sqrt(discriminant)
+            t0 = (-b - sqrt_discriminant) / (2 * a)
+            t1 = (-b + sqrt_discriminant) / (2 * a)
+
+            for t in [t0, t1]:
+                y = orig[1] + t * dir[1]
+                if self.bottom_center[1] <= y <= self.top_center[1] and t > 0:
+                    t_values.append(t)
+
+        # Intersección con las tapas superior e inferior del cilindro
+        if dir[1] != 0:
+            # Tapa inferior
+            t_bottom = (self.bottom_center[1] - orig[1]) / dir[1]
+            if t_bottom > 0:
+                x_bottom = orig[0] + t_bottom * dir[0]
+                z_bottom = orig[2] + t_bottom * dir[2]
+                if (x_bottom - self.position[0])**2 + (z_bottom - self.position[2])**2 <= self.radius**2:
+                    t_values.append(t_bottom)
+
+            # Tapa superior
+            t_top = (self.top_center[1] - orig[1]) / dir[1]
+            if t_top > 0:
+                x_top = orig[0] + t_top * dir[0]
+                z_top = orig[2] + t_top * dir[2]
+                if (x_top - self.position[0])**2 + (z_top - self.position[2])**2 <= self.radius**2:
+                    t_values.append(t_top)
+
+        # Si no hay intersecciones válidas
+        if not t_values:
+            return None
+
+        # Escoger el punto de intersección más cercano al origen
+        t = min(t_values)
+        P = sum_elements(orig, scalar_multiply(t, dir))
+
+        # Determinar la normal y las coordenadas de textura
+        if abs(P[1] - self.top_center[1]) < 1e-6:
+            # Intersección con la tapa superior
+            normal = [0, 1, 0]
+            u = ((P[0] - self.position[0]) / (2 * self.radius)) + 0.5
+            v = ((P[2] - self.position[2]) / (2 * self.radius)) + 0.5
+        elif abs(P[1] - self.bottom_center[1]) < 1e-6:
+            # Intersección con la tapa inferior
+            normal = [0, -1, 0]
+            u = ((P[0] - self.position[0]) / (2 * self.radius)) + 0.5
+            v = ((P[2] - self.position[2]) / (2 * self.radius)) + 0.5
+        else:
+            # Intersección con la superficie lateral
+            normal = [P[0] - self.position[0], 0, P[2] - self.position[2]]
+            normal = normalize(normal)
+            u = (atan2(normal[2], normal[0]) / (2 * pi)) + 0.5
+            v = (P[1] - self.bottom_center[1]) / self.height
+
+        # Asegurarse de que u y v están en el rango [0, 1)
+        u = u % 1.0
+        v = v % 1.0
+
+        return Intercept(
+            point=P,
+            normal=normal,
+            distance=t,
+            texCoords=[u, v],
+            rayDirection=dir,
+            obj=self
+        )
+
+

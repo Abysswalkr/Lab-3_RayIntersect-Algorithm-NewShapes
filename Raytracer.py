@@ -14,6 +14,7 @@ screen = pygame.display.set_mode((width, height), pygame.SCALED)
 clock = pygame.time.Clock()
 
 rt = RendererRT(screen)
+rt.envMap = Texture('Textures/fondo.bmp')
 rt.glClearColor(0.5, 0.0, 0.0)
 rt.glClear()
 
@@ -38,26 +39,35 @@ holograma = Material(texture = Texture('Textures/holograma.bmp'), spec=128, Ks=0
 
 # Coordenadas de la pirámide
 # Vértices de la base cuadrada
-v0 = [-3, 1, -7]
-v1 = [-1, 1, -7]
-v2 = [-2, 2.5, -8]
-triangle = Triangle(v0, v1, v2, material=glass)
+# Triángulos ajustados en tamaño y posición
+v0 = [-4, 0.5, -10]
+v1 = [-2, 0.5, -10]
+v2 = [-3, 3, -10]
+triangle = Triangle(v0, v1, v2, material=bubuja)
 rt.scene.append(triangle)
 
-
-v3 = [3, 2, -9]
-v4 = [1.2, 2, -8]
-v5 = [2, 4, -8]
+v3 = [2.5, 2.5, -9]
+v4 = [0.7, 2, -8]
+v5 = [1.5, 4.5, -9]
 triangle2 = Triangle(v3, v4, v5, material=lava)
 rt.scene.append(triangle2)
 
-v0 = [-2, -1.5, -3]
-v1 = [1, -1.5, -3]
-v2 = [-2, -1.5, -6]
+v0 = [-3, -1.5, -4]
+v1 = [2, -1.5, -4]
+v2 = [-3, -1.5, -8]
 triangle3 = Triangle(v0, v1, v2, material=holograma)
 rt.scene.append(triangle3)
 
-# Ajustar la cámara para una vista lateral en perspectiva
+# Cilindros con posiciones y tamaños variados
+cylinder = Cylinder(position=[-1, -2, -6], radius=0.8, height=1.2, material=reptil)
+rt.scene.append(cylinder)
+
+cylinder2 = Cylinder(position=[2.5, -1, -7], radius=1.5, height=1.5, material=glass)
+rt.scene.append(cylinder2)
+
+cylinder3 = Cylinder(position=[0.5, 1, -8], radius=0.7, height=0.8, material=mandala)
+rt.scene.append(cylinder3)
+
 
 
 

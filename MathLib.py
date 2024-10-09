@@ -1,4 +1,5 @@
 from math import pi, sin, cos, isclose, sqrt
+from cmath import sqrt as csqrt
 
 
 def barycentricCoords(A, B, C, P):
