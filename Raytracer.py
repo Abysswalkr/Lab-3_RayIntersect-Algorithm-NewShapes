@@ -7,8 +7,8 @@ from lights import *
 from texture import Texture
 
 # Configuración de pantalla
-width =  400
-height = 216
+width =  1000
+height = 740
 
 screen = pygame.display.set_mode((width, height), pygame.SCALED)
 clock = pygame.time.Clock()
@@ -69,6 +69,9 @@ cylinder3 = Cylinder(position=[0.5, 1, -8], radius=0.7, height=0.8, material=man
 rt.scene.append(cylinder3)
 
 
+# Crear el toroide y añadirlo a la escena
+#toroide = Torus(position=[0, 0, -5], major_radius=2, minor_radius=0.5, material=bubuja)
+#rt.scene.append(toroide)
 
 
 # Iluminación

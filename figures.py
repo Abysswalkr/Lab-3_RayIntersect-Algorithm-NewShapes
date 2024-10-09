@@ -337,3 +337,53 @@ class Cylinder(Shape):
         )
 
 
+class Torus(Shape):
+    def __init__(self, position, major_radius, minor_radius, material):
+        super().__init__(position, material)
+        self.major_radius = major_radius  # Radio mayor (distancia al centro del toroide)
+        self.minor_radius = minor_radius  # Radio menor (radio del tubo)
+        self.type = "Torus"
+
+    def ray_intersect(self, orig, dir):
+        # Transformar el origen y dirección del rayo al sistema de coordenadas del toroide
+        L = sub_elements(orig, self.position)
+
+        # Coeficientes de la ecuación de cuarto grado para un toroide
+        sum_dir2 = dir[0] ** 2 + dir[1] ** 2 + dir[2] ** 2
+        sum_L2 = L[0] ** 2 + L[1] ** 2 + L[2] ** 2
+        R2 = self.major_radius ** 2
+        r2 = self.minor_radius ** 2
+
+        k1 = sum_dir2 ** 2
+        k2 = 4 * sum_dir2 * dot(L, dir)
+        k3 = 2 * sum_dir2 * (sum_L2 - (R2 + r2)) + 4 * (dot(L, dir) ** 2) + 4 * R2 * (dir[0] ** 2 + dir[1] ** 2)
+        k4 = 4 * (sum_L2 - (R2 + r2)) * dot(L, dir) + 8 * R2 * (L[0] * dir[0] + L[1] * dir[1])
+        k5 = (sum_L2 - (R2 + r2)) ** 2 - 4 * R2 * (self.minor_radius ** 2 - L[0] ** 2 - L[1] ** 2)
+
+        # Resolver la ecuación de cuarto grado
+        roots = solve_quartic(k1, k2, k3, k4, k5)
+        roots = [t for t in roots if t > 0]
+
+        if not roots:
+            return None
+
+        # Seleccionar la intersección más cercana
+        t = min(roots)
+        P = sum_elements(orig, scalar_multiply(t, dir))
+
+        # Calcular la normal en el punto de intersección
+        temp = sqrt(P[0] ** 2 + P[1] ** 2) - self.major_radius
+        normal = normalize([P[0] * temp, P[1] * temp, P[2]])
+
+        # Calcular las coordenadas UV para la textura
+        u = (atan2(P[1], P[0]) / (2 * pi)) + 0.5
+        v = (atan2(P[2], temp) / (2 * pi)) + 0.5
+
+        return Intercept(
+            point=P,
+            normal=normal,
+            distance=t,
+            texCoords=[u, v],
+            rayDirection=dir,
+            obj=self
+        )

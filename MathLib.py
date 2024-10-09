@@ -209,3 +209,67 @@ def normalize(v):
     if vector_norm == 0:
         raise ValueError("La norma del vector es 0, no se puede normalizar.")
     return [comp / vector_norm for comp in v]
+
+
+def solve_quartic(a, b, c, d, e):
+    # Normalizar los coeficientes
+    if not isclose(a, 1):
+        b /= a
+        c /= a
+        d /= a
+        e /= a
+
+    # Coeficientes reducidos
+    p = c - 3 * (b ** 2) / 8
+    q = b ** 3 / 8 - b * c / 2 + d
+    r = -3 * (b ** 4) / 256 + (b ** 2) * c / 16 - b * d / 4 + e
+
+    # Resolver la ecuación cúbica auxiliar y encontrar z0
+    coeffs_cubic = [1, p / 2, (p ** 2 - 4 * r) / 16, -q ** 2 / 64]
+    cubic_roots = [real_root for real_root in solve_cubic(*coeffs_cubic) if isclose(real_root.imag, 0)]
+
+    # Verificar si hay raíces reales en la cúbica
+    if not cubic_roots:
+        return []  # Si no hay raíces reales, no hay intersección posible
+
+    z0 = max(cubic_roots)
+
+    # Coeficientes para resolver las ecuaciones cuadráticas
+    u = csqrt(2 * z0 - p).real
+
+    # Prevenir la división por cero si u es cero
+    roots = []
+    if isclose(u, 0):
+        for sign in [1, -1]:
+            root = (-b / 4) + (sign * csqrt(z0).real)
+            if isclose(root.imag, 0):
+                roots.append(root.real)
+    else:
+        v = -q / (8 * u)
+        # Resolver las dos ecuaciones cuadráticas
+        for sign1 in [1, -1]:
+            for sign2 in [1, -1]:
+                root = (-b / 4) + (sign1 * u / 2) + (sign2 * csqrt(z0 + v * sign1).real)
+                if isclose(root.imag, 0):
+                    roots.append(root.real)
+
+    return [root for root in roots if root > 0]
+
+
+def solve_cubic(a, b, c, d):
+    """ Solución de ecuaciones cúbicas para la parte auxiliar en la función solve_quartic. """
+    if not isclose(a, 1):
+        b /= a
+        c /= a
+        d /= a
+
+    delta_0 = b ** 2 - 3 * c
+    delta_1 = 2 * b ** 3 - 9 * b * c + 27 * d
+
+    C = csqrt((delta_1 ** 2 - 4 * delta_0 ** 3) / 27).real
+    C = pow((delta_1 + C) / 2, 1 / 3) if not isclose(C, 0) else pow((delta_1 - C) / 2, 1 / 3)
+
+    u = [1, (-1 + csqrt(-3)) / 2, (-1 - csqrt(-3)) / 2]
+    roots = [-(b + u_i * C + delta_0 / (u_i * C)) / 3 for u_i in u]
+
+    return [root.real for root in roots if isclose(root.imag, 0)]
